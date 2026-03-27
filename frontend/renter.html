@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renter Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <div class="brand-mark">EE</div>
+            <div class="brand-text">
+                <b>EstateEase</b>
+                <span class="small">Renter Dashboard</span>
+            </div>
+        </div>
+        <nav id="mainNav"></nav>
+        <script src="js/header.js"></script>
+    </header>   
+    <div class="container">
+        <div class="card" id="info"></div>
+        <div class="card">
+            <h3>Browse Properties</h3>
+        <button onclick="goRent()">Browse Listings</button>
+        <p class="small">By opening the properties you can send the "Contact/Booking" request.
+        </p>
+    </div>
+    </div> 
+    <script src="js/auth.js"></script>  
+    <script>
+        const s = requireLogin();
+        document.getElementById("info").innerHTML = `
+            <h2>Welcome, ${s.fname}</h2>
+            <p class="small">Role: ${s.role} • Verified: ${s.isVerified ? "Yes":"No"}</p>
+        `;
+        function goRent(){
+            window.location.href = "index.html";
+        }
+    </script>
+    </body>
+</html>

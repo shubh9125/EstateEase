@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EstateEase</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Load icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <div class="brand-mark">EE</div>
+            <div class="brand-text">
+                <b>EstateEase</b>
+                <span class="small">Find your dream property faster</span>
+            </div>
+        </div>
+
+        <button class="mobile-menu-btn" id="menuBtn" type="button">☰</button>
+
+        <nav id="mainNav"></nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-wrap">
+            <div class="hero-copy">
+                <h1>Find Your Dream Home with EstateEase</h1>
+                <p>
+                    Discover the best properties for sale and rent in your area with EstateEase.
+                    Whether you're looking for a cozy apartment, a spacious house, or a commercial property,
+                    we have you covered. Start your search today and find the perfect home for you and your family.
+                </p>
+            </div>
+
+            <div class="search-card">
+                <div class="search-grid">
+                    <div class="search-field">
+                        <div style="width: 100%;">
+                            <strong>Want to</strong>
+                            <select id="type" style="margin-top: 5px; border: none; padding: 0; background: transparent; color: var(--muted); font-size: 14px; width: 100%; cursor: pointer;">
+                                <option value="">Any</option>
+                                <option value="buy">Buy</option>
+                                <option value="sell">Sell</option>
+                                <option value="rent">Rent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="search-field">
+                        <div style="width: 100%;">
+                            <strong>Property type</strong>
+                            <select id="propertyType" style="margin-top: 5px; border: none; padding: 0; background: transparent; color: var(--muted); font-size: 14px; width: 100%; cursor: pointer;">
+                                <option value="">Any</option>
+                                <option value="house">House</option>
+                                <option value="villa">Villa</option>
+                                <option value="apartment">Apartment</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="search-field">
+                        <div style="width: 100%;">
+                            <strong>Location</strong>
+                            <input type="text" id="city" placeholder="City name..." style="margin-top: 5px; border: none; padding: 0; background: transparent; color: var(--muted); font-size: 14px; width: 100%;">
+                        </div>
+                        <div class="search-icon">&#x1F4CD; </div>
+                    </div>
+
+                    <button class="search-btn" onclick="load()">⌕ Search</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section" id="about">
+        <div class="section-head">
+            <h2>Best Properties In Your City.</h2>
+            <p>
+                Explore our handpicked selection of the best properties available in your city. Whether you're looking for a modern apartment,
+                a charming house, or a spacious villa, we have something for everyone. Our listings are updated regularly to ensure you have
+                access to the latest and most desirable properties on the market. Start your search today and find your dream home in your city with EstateEase.
+            </p>
+            <a href="#listings" class="outline-btn">Explore More ↗</a>
+        </div>
+
+        <div id="list" class="property-grid"></div>
+    </section>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/header.js"></script>
+    <script>
+        const menuBtn = document.getElementById('menuBtn');
+        const mainNav = document.getElementById('mainNav');
+        if (menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                mainNav.classList.toggle('open');
+            });
+        }
+
+        async function load() {
+            // Check for searchType from header buttons
+            const storedType = localStorage.getItem('searchType');
+            if (storedType) {
+                document.getElementById('type').value = storedType;
+                localStorage.removeItem('searchType'); // Clear it after use
+            }
+
+            const type = document.getElementById('type').value;
+            const propertyType = document.getElementById('propertyType').value;
+            const city = document.getElementById('city').value.trim().toLowerCase();
+
+            const box = document.getElementById('list');
+            box.innerHTML = '<div class="card">Loading properties...</div>';
+
+            try {
+                const res = await api('/properties');
+                let list = res.properties || res;
+                
+                // Filter the list based on search criteria and admin status
+                if (Array.isArray(list)) {
+                    list = list.filter(p => {
+                        // 1. Hide if not verified
+                        if (!p.isVerified) return false;
+                        
+                        // 2. Hide if flagged as fraud
+                        if (p.flaggedAsFraud) return false;
+
+                        let match = true;
+                        if (type && p.type !== type) match = false;
+                        if (propertyType && p.propertyType !== propertyType) match = false;
+                        if (city && p.location?.city?.toLowerCase() !== city) match = false;
+                        return match;
+                    });
+                }
+                
+                box.innerHTML = '';
+
+                (Array.isArray(list) ? list : []).forEach((p, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'property-card';
+
+                    const imageUrl = p.images && p.images.length > 0
+                        ? (p.images[0].startsWith("http") ? p.images[0] : `http://localhost:5000${p.images[0].startsWith('/') ? '' : '/'}${p.images[0]}`)
+                        : 'https://placehold.co/600x420/d1d5db/475569?text=Property+Image';
+
+                    const locationText = [p.location?.address, p.location?.city, p.location?.state].filter(Boolean).join(', ');
+                    const priceText = p.price ? `Rs.${Number(p.price).toLocaleString('en-IN')} ${p.type === 'rent' ? '/month' : ''}` : 'Price on request';
+                    
+
+                    div.innerHTML = `
+                        <div class="property-thumb-wrap">
+                            <img class="property-thumb" src="${imageUrl}" alt="property image">
+                            ${index === 0 ? '<span class="new-tag">New</span>' : ''}
+                        </div>
+                        <div class="property-body">
+                            <div class="property-price-row">
+                                <h3>${priceText}</h3>
+                                <span class="badge">${(p.type || 'buy').toUpperCase()}</span>
+                            </div>
+                            <h4 class="property-name">${p.title || 'Premium Property'}</h4>
+                            <p class="property-address">${locationText || 'Prime location available'}</p>
+                            
+                            <div style="margin-top:16px;">
+                                <button onclick="openProperty('${p._id}')">View Details</button>
+                            </div>
+                        </div>
+                    `;
+
+                    box.appendChild(div);
+                });
+
+                if (!list || list.length === 0) {
+                    box.innerHTML = '<div class="card">No properties found.</div>';
+                }
+            } catch (e) {
+                box.innerHTML = `<div class="card">${e.message}</div>`;
+            }
+        }
+
+        function openProperty(id) {
+            localStorage.setItem('propertyId', id);
+            window.location.href = 'property.html';
+        }
+
+        load();
+    </script>
+</body>
+</html>

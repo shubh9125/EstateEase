@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+    <header>
+        <div class="brand">
+            <div class="brand-mark">EE</div>
+            <div class="brand-text">
+                <b>EstateEase</b>
+                <span class="small">Seller Dashboard</span>
+            </div>
+        </div>
+        <nav id="mainNav"></nav>
+    </header>
+    <div class="container">
+        <div class="card" id="info"></div>
+        <div class="card">
+            <h3>Your Listings</h3>
+            <div class = "row">
+                <div class = "column">
+                    <input id = "title" placeholder = "Title">
+                </div>
+                <div class = "column">
+                    <select id = "type">
+                        <option value="sell">Sell</option>
+                        <option value="rent">Rent</option>
+                    </select>
+                </div>
+                <div class = "column">
+                    <select id = "propertyType">
+                        <option value="house">House</option>
+                        <option value="villa">Villa</option>
+                        <option value="apartment">Apartment</option>
+                    </select>
+                </div>
+                </div>
+                <textarea id = "description" placeholder = "Description"></textarea>
+                <div class = "row">
+                    <div class = "column">
+                        <input type="number" id = "price" placeholder = "Price">
+                    </div>
+                    <div class = "column">
+                        <input id = "city" placeholder = "City"></div>     
+                </div>
+                <input id = "address" placeholder="Address">
+                <input type="file" id="images" multiple accept="image/*" />
+                <small>Upload up to 10 images (jpg, jpeg, png, webp). Max 5MB per file.</small>
+                <button onclick="addProperty()">Submit For Verification</button>
+                <p class = " small" id = "msg"></p>
+            </div>
+
+            <div class="card">
+                <h3>Manage Listings</h3>
+                <button class = "seconddary" onclick = "loadMine()">Refresh</button>
+                <div id = "mine"></div>
+            </div>
+
+            <div class="card">
+                <h3>Buyer/Renter Requests</h3>
+                <button class = "secondary" onclick = "loadInbox()">Refresh Inbox</button>
+                <div id = "inbox"></div>
+            </div>
+        </div>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/header.js"></script>
+    <script src="js/seller.js"></script>
+</body>
+</html> 

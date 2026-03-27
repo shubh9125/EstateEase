@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EstateEase</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <div class="brand-mark">EE</div>
+            <div class="brand-text">
+                <b>EstateEase</b>
+                <span class="small">Create an account</span>
+            </div>
+        </div>
+        <nav id="mainNav"></nav>
+        <script src="js/header.js"></script>
+    </header>
+
+    <div class="lcontainer">
+        <div class="card">
+            <h2><center>Register</center></h2>
+            <input type="text" id="fname" placeholder="Name">
+            <input type="email" id="email" placeholder="Email">
+            <input type="text" id="phone" placeholder="Phone Number">
+            <select id="role">
+                <option value="">Select Role</option>
+                <option value="buyer">Buyer</option>
+                <option value="seller">Seller</option>
+                <option value="renter">Renter</option>
+            </select>
+            <input type="password" id="password" placeholder="Password (6+ characters)" minlength="6">
+            <button onclick="register()">Register</button>
+            <p class ="small" id = "msg">Already have an account? <a href="login.html"><u>Login here</u></a>.</p>
+        </div>
+    </div>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        async function register() {
+            const fname = document.getElementById('fname').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const role = document.getElementById('role').value;
+            const password = document.getElementById('password').value.trim();
+            try{
+                const data = await api("/auth/register", "POST", {fname, email, phone, role, password});
+                document.getElementById("msg").textContent = data.message + " Please login.";
+            }catch(e){
+                document.getElementById("msg").innerText = e.message;
+            }
+        }
+    </script>
+</body>
+</html>
