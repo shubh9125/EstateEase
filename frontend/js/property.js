@@ -158,7 +158,7 @@ function initMap(address) {
     const mapContainer = document.getElementById('map');
     if (!mapContainer) return;
 
-    const apiKey = "AIzaSyBqZQ83IZn0zl4XBGYvhO9J8YEVDW-5rsA"; // Your key here
+    const apiKey = "YOUR_GOOGLE_MAPS_API_KEY"; // Your key here
     
     if (apiKey === "YOUR_GOOGLE_MAPS_API_KEY") {
         mapContainer.innerHTML = `
