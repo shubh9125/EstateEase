@@ -46,11 +46,11 @@ async function loadProperty() {
 
         const imageArray = currentProperty.images || [];
         const firstImage = imageArray.length > 0 ? imageArray[0] : "";
+        const imageUrl = window.getPropertyImageUrl(firstImage);
 
-        const imageUrl = firstImage
-            ? (firstImage.startsWith("http") ? firstImage : `http://localhost:5000${firstImage}`)
-            : "";
-
+        console.log("Selected property:", currentProperty);
+        console.log("Images array:", imageArray);
+        console.log("First image:", firstImage);
         console.log("Final image URL:", imageUrl);
 
         if (currentProperty.flaggedAsFraud) {
@@ -73,6 +73,7 @@ async function loadProperty() {
                     src="${imageUrl}" 
                     alt="${currentProperty.title}" 
                     style="width:100%; height:320px; object-fit:cover; border-radius:10px; margin-bottom:15px;"
+                    onerror="this.src='https://placehold.co/800x400?text=Image+Not+Found'"
                 >
             ` : `<p><em>No image available</em></p>`}
 
@@ -85,6 +86,18 @@ async function loadProperty() {
             <p>${currentProperty.description || ""}</p>
             <p><b>Price:</b> ₹${currentProperty.price || 0}</p>
         `;
+
+        // Load Map
+        if (currentProperty.location?.coordinates?.lat && currentProperty.location?.coordinates?.lng) {
+            document.getElementById("mapCard").style.display = "block";
+            initLeafletMap(currentProperty.location.coordinates.lat, currentProperty.location.coordinates.lng, currentProperty.title);
+        } else {
+            const address = `${currentProperty.location?.address || currentProperty.address || ""}, ${currentProperty.location?.city || currentProperty.city || ""}`;
+            if (address && address.length > 5) {
+                document.getElementById("mapCard").style.display = "block";
+                initMap(address); // Fallback to old search-based map if no coords
+            }
+        }
 
         const seller = currentProperty.ownerId;
         if (seller) {
@@ -108,35 +121,68 @@ async function loadProperty() {
 }
 
 async function sendBooking() {
+    const propertyId = localStorage.getItem("propertyId");
+    const message = document.getElementById("message").value;
     const msg = document.getElementById("bookingMsg");
-    const message = document.getElementById("message").value.trim();
-    const user = requireLogin();
 
-    if (!user) return;
-
-    if (user.role !== "buyer" && user.role !== "renter") {
-        msg.innerText = "Only buyer or renter can send a request.";
-        return;
-    }
-
-    if (!currentProperty) {
-        msg.innerText = "Property not loaded.";
+    if (!message) {
+        msg.innerText = "Please enter a message";
+        msg.style.color = "red";
         return;
     }
 
     try {
-        const propertyId = currentProperty._id || currentProperty.id;
-
-        const data = await api("/bookings", "POST", {
-            propertyId,
-            message
-        });
-
-        msg.innerText = data.message || "Request sent successfully";
+        const res = await api("/bookings", "POST", { propertyId, message });
+        msg.innerText = res.message;
+        msg.style.color = "green";
         document.getElementById("message").value = "";
     } catch (e) {
         msg.innerText = e.message;
+        msg.style.color = "red";
     }
+}
+
+function initLeafletMap(lat, lng, title) {
+    const map = L.map('map').setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.marker([lat, lng])
+        .bindPopup(title)
+        .addTo(map);
+}
+
+// Google Maps Integration (using Embed API - more reliable)
+function initMap(address) {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+
+    const apiKey = "AIzaSyBqZQ83IZn0zl4XBGYvhO9J8YEVDW-5rsA"; // Your key here
+    
+    if (apiKey === "YOUR_GOOGLE_MAPS_API_KEY") {
+        mapContainer.innerHTML = `
+            <div style="padding: 20px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; color: #92400e;">
+                <p><strong>Map setup needed:</strong> Please replace <code>YOUR_GOOGLE_MAPS_API_KEY</code> in <code>js/property.js</code> with your real Google Maps API Key to show the property's location.</p>
+                <p>Current Address: <em>${address}</em></p>
+            </div>
+        `;
+        return;
+    }
+
+    // Using Google Maps Embed API (Iframe) - much simpler and works more reliably
+    const encodedAddress = encodeURIComponent(address);
+    mapContainer.innerHTML = `
+        <iframe
+            width="100%"
+            height="100%"
+            style="border:0; border-radius: 12px;"
+            loading="lazy"
+            allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodedAddress}">
+        </iframe>
+    `;
 }
 
 loadProperty();

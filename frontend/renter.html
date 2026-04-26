@@ -22,21 +22,18 @@
         <div class="card" id="info"></div>
         <div class="card">
             <h3>Browse Properties</h3>
-        <button onclick="goRent()">Browse Listings</button>
-        <p class="small">By opening the properties you can send the "Contact/Booking" request.
-        </p>
-    </div>
+            <button onclick="goRent()">Browse Listings</button>
+            <p class="small">By opening the properties you can send the "Contact/Booking" request.</p>
+        </div>
+
+        <div class="card">
+            <h3>Your Sent Requests</h3>
+            <button class="secondary" onclick="loadMyInbox()">Refresh Inbox</button>
+            <div id="inbox"></div>
+        </div>
     </div> 
+    <script src="js/api.js"></script>   
     <script src="js/auth.js"></script>  
-    <script>
-        const s = requireLogin();
-        document.getElementById("info").innerHTML = `
-            <h2>Welcome, ${s.fname}</h2>
-            <p class="small">Role: ${s.role} • Verified: ${s.isVerified ? "Yes":"No"}</p>
-        `;
-        function goRent(){
-            window.location.href = "index.html";
-        }
-    </script>
+    <script src="js/renter.js"></script>
     </body>
 </html>

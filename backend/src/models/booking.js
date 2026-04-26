@@ -1,13 +1,13 @@
-const moongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-const bookingSchema = new moongoose.Schema({
+const bookingSchema = new mongoose.Schema({
     propertyId: {
-        type: moongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Property',
         required: true
     },
     buyerOrRenterId: {
-        type: moongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
@@ -17,6 +17,14 @@ const bookingSchema = new moongoose.Schema({
         required: true
     },
     message: {
+        type: String,
+        default: '',
+    },
+    sellerReply: {
+        type: String,
+        default: '',
+    },
+    buyerReply: {
         type: String,
         default: '',
     },
@@ -33,4 +41,4 @@ const bookingSchema = new moongoose.Schema({
 {timestamps: true}
 );
 
-module.exports = moongoose.model('Booking', bookingSchema);
+module.exports = mongoose.model('Booking', bookingSchema);

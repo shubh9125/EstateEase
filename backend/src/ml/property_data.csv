@@ -1,0 +1,16 @@
+price,description_length,title_length,city,property_type,image_count,seller_listing_count
+2500000,120,18,dehradun,house,4,2
+1800000,95,15,dehradun,apartment,3,1
+3200000,140,20,delhi,villa,5,1
+4000000,130,19,mumbai,apartment,3,2
+2700000,110,17,noida,apartment,4,1
+3500000,150,21,dehradun,villa,6,2
+2200000,100,16,delhi,house,2,1
+2900000,125,18,noida,house,4,2
+3100000,135,19,mumbai,villa,5,1
+2600000,118,17,dehradun,apartment,3,2
+500000,10,4,dehradun,house,0,15
+15000000,15,5,dehradun,house,0,20
+99999999,8,3,delhi,villa,0,30
+100000,12,4,mumbai,apartment,0,18
+75000000,20,6,noida,house,1,25

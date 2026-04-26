@@ -1,8 +1,8 @@
 const adminUser = requireLogin();
 
 if (adminUser) {
-    if (adminUser.role !== 'admin') {
-        window.location.href = 'index.html';
+    if (adminUser.role !== "admin") {
+        window.location.href = "index.html";
     }
     document.getElementById("adminName").textContent = `Welcome, ${adminUser.fname || "Admin"}`;
     document.getElementById("adminRole").textContent = `Role: ${adminUser.role}`;
@@ -11,11 +11,11 @@ if (adminUser) {
 async function loadStats() {
     try {
         const data = await api("/admin/stats");
-        
+
         const fields = [
-            'totalUsers', 'verifiedUsers', 'blockedUsers',
-            'totalProperties', 'verifiedProperties', 'blockedProperties', 'pendingProperties',
-            'bookings', 'payments', 'frauds'
+            "totalUsers", "verifiedUsers", "blockedUsers",
+            "totalProperties", "verifiedProperties", "blockedProperties", "pendingProperties",
+            "bookings", "payments", "frauds"
         ];
 
         fields.forEach(field => {
@@ -35,46 +35,56 @@ async function loadProperties() {
 
     try {
         const properties = await api("/admin/all/properties");
+
         if (properties.length === 0) {
             container.innerHTML = "<div>No properties found.</div>";
             return;
         }
 
         let html = `
-            <table class="admin-table">
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                 <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Title</th>
-                        <th>Owner</th>
-                        <th>Price</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                    <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                        <th style="padding: 10px;">Image</th>
+                        <th style="padding: 10px;">Title</th>
+                        <th style="padding: 10px;">Owner</th>
+                        <th style="padding: 10px;">Price</th>
+                        <th style="padding: 10px;">Fraud Score</th>
+                        <th style="padding: 10px;">Reason</th>
+                        <th style="padding: 10px;">Status</th>
+                        <th style="padding: 10px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
 
         properties.forEach(p => {
-            const firstImg = p.images && p.images.length > 0 ? p.images[0] : '';
-            const imgUrl = firstImg ? (firstImg.startsWith('http') ? firstImg : `http://localhost:5000${firstImg.startsWith('/') ? '' : '/'}${firstImg}`) : 'https://placehold.co/40x40?text=P';
-            
+            const firstImg = p.images && p.images.length > 0 ? p.images[0] : "";
+            const imgUrl = window.getPropertyImageUrl(firstImg);
+
             html += `
-                <tr>
-                    <td><img src="${imgUrl}" alt="property" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;"></td>
-                    <td>${p.title}</td>
-                    <td>${p.ownerId ? p.ownerId.fname : 'N/A'}</td>
-                    <td>₹${p.price}</td>
-                    <td>
-                        <span style="color: ${p.isVerified ? 'green' : 'orange'}">${p.isVerified ? 'Verified' : 'Pending'}</span>
-                        ${p.flaggedAsFraud ? ' | <span style="color: red">Flagged</span>' : ''}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;">
+                        <img src="${imgUrl}" alt="property" 
+                             style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;"
+                             onerror="this.src='https://placehold.co/100x100?text=No+Img'">
                     </td>
-                    <td>
-                        <button class="action-btn ${p.isVerified ? 'btn-unverify' : 'btn-verify'}" onclick="togglePropertyVerify('${p._id}', ${p.isVerified})">
-                            ${p.isVerified ? 'Unverify' : 'Verify'}
+                    <td style="padding: 10px;">${p.title}</td>
+                    <td style="padding: 10px;">${p.ownerId ? p.ownerId.fname : "N/A"}</td>
+                    <td style="padding: 10px;">₹${p.price}</td>
+                    <td style="padding: 10px;">${typeof p.fraudScore === "number" ? p.fraudScore.toFixed(4) : "0.0000"}</td>
+                    <td style="padding: 10px;">${p.fraudReason || "Normal"}</td>
+                    <td style="padding: 10px;">
+                        <span style="color: ${p.isVerified ? "green" : "orange"}">${p.isVerified ? "Verified" : "Pending"}</span>
+                        ${p.flaggedAsFraud ? ' | <span style="color: red">Flagged</span>' : ""}
+                        <div style="font-size: 12px; margin-top: 4px;">Review: ${p.reviewStatus || "pending"}</div>
+                    </td>
+                    <td style="padding: 10px;">
+                        <button class="admin-btn" style="padding: 5px 10px; font-size: 12px; background: ${p.isVerified ? "#666" : "#28a745"}" onclick="togglePropertyVerify('${p._id}', ${p.isVerified})">
+                            ${p.isVerified ? "Unverify" : "Verify"}
                         </button>
-                        <button class="action-btn ${p.flaggedAsFraud ? 'btn-unflag' : 'btn-flag'}" onclick="togglePropertyFlag('${p._id}', ${p.flaggedAsFraud})">
-                            ${p.flaggedAsFraud ? 'Unflag' : 'Flag Fraud'}
+                        <button class="admin-btn" style="padding: 5px 10px; font-size: 12px; background: ${p.flaggedAsFraud ? "#28a745" : "#dc3545"}" onclick="togglePropertyFlag('${p._id}', ${p.flaggedAsFraud})">
+                            ${p.flaggedAsFraud ? "Unflag" : "Flag Fraud"}
                         </button>
                     </td>
                 </tr>
@@ -94,20 +104,21 @@ async function loadUsers() {
 
     try {
         const users = await api("/admin/all/users");
+
         if (users.length === 0) {
             container.innerHTML = "<div>No users found.</div>";
             return;
         }
 
         let html = `
-            <table class="admin-table">
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                 <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                    <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                        <th style="padding: 10px;">Name</th>
+                        <th style="padding: 10px;">Email</th>
+                        <th style="padding: 10px;">Role</th>
+                        <th style="padding: 10px;">Status</th>
+                        <th style="padding: 10px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -115,20 +126,20 @@ async function loadUsers() {
 
         users.forEach(u => {
             html += `
-                <tr>
-                    <td>${u.fname}</td>
-                    <td>${u.email}</td>
-                    <td>${u.role}</td>
-                    <td>
-                        <span style="color: ${u.isVerified ? 'green' : 'orange'}">${u.isVerified ? 'Verified' : 'Pending'}</span>
-                        ${u.isBlocked ? ' | <span style="color: red">Blocked</span>' : ''}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;">${u.fname}</td>
+                    <td style="padding: 10px;">${u.email}</td>
+                    <td style="padding: 10px;">${u.role}</td>
+                    <td style="padding: 10px;">
+                        <span style="color: ${u.isVerified ? "green" : "orange"}">${u.isVerified ? "Verified" : "Pending"}</span>
+                        ${u.isBlocked ? ' | <span style="color: red">Blocked</span>' : ""}
                     </td>
-                    <td>
-                        <button class="action-btn ${u.isVerified ? 'btn-unverify' : 'btn-verify'}" onclick="toggleUserVerify('${u._id}', ${u.isVerified})">
-                            ${u.isVerified ? 'Unverify' : 'Verify'}
+                    <td style="padding: 10px;">
+                        <button class="admin-btn" style="padding: 5px 10px; font-size: 12px; background: ${u.isVerified ? "#666" : "#28a745"}" onclick="toggleUserVerify('${u._id}', ${u.isVerified})">
+                            ${u.isVerified ? "Unverify" : "Verify"}
                         </button>
-                        <button class="action-btn ${u.isBlocked ? 'btn-unblock' : 'btn-block'}" onclick="toggleUserBlock('${u._id}', ${u.isBlocked})">
-                            ${u.isBlocked ? 'Unblock' : 'Block'}
+                        <button class="admin-btn" style="padding: 5px 10px; font-size: 12px; background: ${u.isBlocked ? "#28a745" : "#dc3545"}" onclick="toggleUserBlock('${u._id}', ${u.isBlocked})">
+                            ${u.isBlocked ? "Unblock" : "Block"}
                         </button>
                     </td>
                 </tr>
@@ -182,6 +193,6 @@ async function togglePropertyFlag(id, currentStatus) {
     }
 }
 
-// Initial load
+loadStats();
 loadProperties();
 loadUsers();

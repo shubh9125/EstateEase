@@ -40,6 +40,10 @@ const propertySchema = new mongoose.Schema({
             type: String,
             required: true,
             trim : true
+        },
+        coordinates: {
+            lat: { type: Number },
+            lng: { type: Number }
         }
     },
     images:{
@@ -48,7 +52,7 @@ const propertySchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['available', 'rented', 'sold'],
+        enum: ['available', 'rented', 'sold', 'active'],
         default: 'available'
     },
     isVerified: {
@@ -58,7 +62,21 @@ const propertySchema = new mongoose.Schema({
     flaggedAsFraud: {
         type: Boolean,
         default: false
-    }
+    },
+    fraudScore: {
+        type: Number,
+        default: 0
+    },
+    fraudReason: {
+        type: String,
+        default: ""
+    },
+    reviewStatus: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending"
+}
+
 },
 {timestamps: true}
 );

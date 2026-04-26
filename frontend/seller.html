@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seller Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
-    </head>
-    <body>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+</head>
+<body>
     <header>
         <div class="brand">
             <div class="brand-mark">EE</div>
@@ -20,55 +22,134 @@
     <div class="container">
         <div class="card" id="info"></div>
         <div class="card">
-            <h3>Your Listings</h3>
-            <div class = "row">
-                <div class = "column">
-                    <input id = "title" placeholder = "Title">
+            <h3>Post New Listing</h3>
+            <div class="row">
+                <div class="column">
+                    <input id="title" placeholder="Title">
                 </div>
-                <div class = "column">
-                    <select id = "type">
+                <div class="column">
+                    <select id="type">
                         <option value="sell">Sell</option>
                         <option value="rent">Rent</option>
                     </select>
                 </div>
-                <div class = "column">
-                    <select id = "propertyType">
+                <div class="column">
+                    <select id="propertyType">
                         <option value="house">House</option>
                         <option value="villa">Villa</option>
                         <option value="apartment">Apartment</option>
                     </select>
                 </div>
+            </div>
+            <textarea id="description" placeholder="Description"></textarea>
+            <div class="row">
+                <div class="column">
+                    <input type="number" id="price" placeholder="Price">
                 </div>
-                <textarea id = "description" placeholder = "Description"></textarea>
-                <div class = "row">
-                    <div class = "column">
-                        <input type="number" id = "price" placeholder = "Price">
-                    </div>
-                    <div class = "column">
-                        <input id = "city" placeholder = "City"></div>     
+                <div class="column">
+                    <input id="city" placeholder="City">
                 </div>
-                <input id = "address" placeholder="Address">
-                <input type="file" id="images" multiple accept="image/*" />
-                <small>Upload up to 10 images (jpg, jpeg, png, webp). Max 5MB per file.</small>
-                <button onclick="addProperty()">Submit For Verification</button>
-                <p class = " small" id = "msg"></p>
+            </div>
+            <input id="address" placeholder="Address">
+            
+            <div style="margin: 15px 0;">
+                <label>Select Location on Map:</label>
+                <div id="sellerMap" style="height: 250px; border-radius: 8px; margin-top: 5px; border: 1px solid #ddd;"></div>
+                <input type="hidden" id="lat">
+                <input type="hidden" id="lng">
+                <small id="coordMsg">Click on the map to set property location</small>
             </div>
 
-            <div class="card">
-                <h3>Manage Listings</h3>
-                <button class = "seconddary" onclick = "loadMine()">Refresh</button>
-                <div id = "mine"></div>
-            </div>
-
-            <div class="card">
-                <h3>Buyer/Renter Requests</h3>
-                <button class = "secondary" onclick = "loadInbox()">Refresh Inbox</button>
-                <div id = "inbox"></div>
-            </div>
+            <input type="file" id="images" multiple accept="image/*" />
+            <small>Upload up to 10 images (jpg, jpeg, png, webp). Max 5MB per file.</small>
+            <button onclick="addProperty()">Submit For Verification</button>
+            <p class="small" id="msg"></p>
         </div>
+
+        <div class="card">
+            <h3>Manage Listings</h3>
+            <button class="secondary" onclick="loadMine()">Refresh</button>
+            <div id="mine"></div>
+        </div>
+
+        <div class="card">
+            <h3>Buyer/Renter Requests</h3>
+            <button class="secondary" onclick="loadInbox()">Refresh Inbox</button>
+            <div id="inbox"></div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/header.js"></script>
     <script src="js/seller.js"></script>
+    <script>
+        let sellerMap;
+        let sellerMarker;
+        let geocodeTimeout;
+
+        function initSellerMap() {
+            sellerMap = L.map('sellerMap').setView([30.3165, 78.0322], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(sellerMap);
+
+            sellerMap.on('click', function(e) {
+                updateMarker(e.latlng.lat, e.latlng.lng);
+            });
+
+            // Auto-point map when city or address is entered
+            const cityInput = document.getElementById('city');
+            const addressInput = document.getElementById('address');
+            
+            const handleInput = function() {
+                clearTimeout(geocodeTimeout);
+                const city = cityInput.value.trim();
+                const address = addressInput.value.trim();
+                const fullQuery = [address, city].filter(Boolean).join(', ');
+                
+                if (fullQuery.length > 3) {
+                    geocodeTimeout = setTimeout(() => geocodeLocation(fullQuery), 1000);
+                }
+            };
+
+            if (cityInput) cityInput.addEventListener('input', handleInput);
+            if (addressInput) addressInput.addEventListener('input', handleInput);
+        }
+
+        async function geocodeLocation(query) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    
+                    sellerMap.setView([lat, lon], 16);
+                    updateMarker(lat, lon);
+                    document.getElementById('coordMsg').innerText = `Location found: ${query} (${lat.toFixed(5)}, ${lon.toFixed(5)})`;
+                }
+            } catch (error) {
+                console.error('Geocoding error:', error);
+            }
+        }
+
+        function updateMarker(lat, lng) {
+            const latlng = [lat, lng];
+            if (sellerMarker) {
+                sellerMarker.setLatLng(latlng);
+            } else {
+                sellerMarker = L.marker(latlng).addTo(sellerMap);
+            }
+            
+            document.getElementById('lat').value = lat;
+            document.getElementById('lng').value = lng;
+            document.getElementById('coordMsg').innerText = `Location set: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        }
+
+        // Initialize map after window loads
+        window.addEventListener('load', initSellerMap);
+    </script>
 </body>
-</html> 
+</html>

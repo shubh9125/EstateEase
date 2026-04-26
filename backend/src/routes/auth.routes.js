@@ -27,15 +27,6 @@ router.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // List of available avatars
-    const avatars = [
-      "/uploads/properties/avatar-1.jpg",
-      "/uploads/properties/avatar-2.jpg",
-      "/uploads/properties/avatar-3.jpg",
-      "/uploads/properties/avatar-4.jpg"
-    ];
-    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
-
     const user = await User.create({
       fname: fname,
       email: email,
@@ -43,8 +34,7 @@ router.post("/register", async (req, res) => {
       password: hashedPassword,
       role: role,
       isVerified: false,
-      isBlocked: false,
-      profileImage: randomAvatar
+      isBlocked: false
     });
 
     res.json({
