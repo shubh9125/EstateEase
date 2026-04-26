@@ -40,10 +40,6 @@ It integrates **modern web technologies, geolocation services, and machine learn
   * Duplicate listings
   * Abnormal data patterns
 
-### 📊 Smart Recommendations *(Optional Enhancement)*
-
-* Suggest properties based on user preferences
-
 ---
 
 ## 🧠 Tech Stack
@@ -113,16 +109,6 @@ OR use Live Server (VS Code)
 
 ---
 
-### 4️⃣ ML Model Setup
-
-```bash
-cd ml-model
-pip install -r requirements.txt
-python model.py
-```
-
----
-
 ## 🔑 Environment Variables
 
 Create `.env` file in backend:
@@ -149,12 +135,6 @@ This helps prevent fraud and improves trust on the platform.
 
 ---
 
-## 📸 Screenshots
-
-*(Add screenshots here for better presentation)*
-
----
-
 ## 🎯 Future Enhancements
 
 * 📱 Mobile App version
@@ -169,13 +149,6 @@ This helps prevent fraud and improves trust on the platform.
 **Shubh Dwivedi**
 B.Tech CSE (AI & DS) – Graphic Era University
 
----
-
-## ⭐ Contribute
-
-Pull requests are welcome. For major changes, please open an issue first.
-
----
 
 ## 📜 License
 
